@@ -20,17 +20,7 @@ jobs:
       run: |
         gh api /orgs/supabase/members/$GH_USER
     - if: failure()
-      name: is-member
-      run: |
-        echo "User is not a member of Supabase org"
-        echo "result=false" >> "$GITHUB_OUTPUT"
-    - if: success()
-      run: |
-        echo "User is a member of Supabase org"
-        echo "result=true" >> "$GITHUB_OUTPUT"
-    - name: Label contributor
-      id: label-contributor
-      if:  ${{ steps.is-member.outputs.result == 'false' }}
+      name: is-external
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         USERNAME: ${{ github.event.issue.user.login }}
@@ -38,11 +28,11 @@ jobs:
         NUMBER: ${{ github.event.issue.number }}
         LABELS: external-issue
       run: |
-        echo "applying external label"
+        echo "User is not a member of Supabase org"
+        echo "result=false" >> "$GITHUB_OUTPUT"
         gh issue edit $NUMBER --add-label $LABELS
-    - name: Label internal
-      id: label-internal
-      if:  ${{ steps.is-member.outputs.result == 'true' }}
+    - if: success()
+      name: is-internal
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         USERNAME: ${{ github.event.issue.user.login }}
@@ -50,7 +40,8 @@ jobs:
         NUMBER: ${{ github.event.issue.number }}
         LABELS: internal-issue
       run: |
-        echo "applying internal label"
+        echo "User is a member of Supabase org"
+        echo "result=true" >> "$GITHUB_OUTPUT"
         gh issue edit $NUMBER --add-label $LABELS
   triage-new:
     runs-on: ubuntu-latest
@@ -58,6 +49,7 @@ jobs:
       - name: Label triage
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           NUMBER: ${{ github.event.issue.number }}
           LABELS: to-triage
         run: |
