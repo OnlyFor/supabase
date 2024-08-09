@@ -28,7 +28,6 @@ The validation is done when the user connects. When their WebSocket connection i
 
 - The RLS policies on the `realtime.messages` table
 - The user information sent as part of their [Auth JWT](/docs/guides/auth/jwts)
-- The request headers
 - The Channel topic the user is trying to connect to
 
 When Realtime generates a policy for a client it performs a query on the `realtime.messages` table and then rolls it back. Realtime does not store any messages in your `realtime.messages` table.
